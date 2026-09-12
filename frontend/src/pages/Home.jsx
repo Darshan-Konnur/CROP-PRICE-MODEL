@@ -2,7 +2,6 @@ import React from 'react'
 import PredictForm from '../components/PredictForm'
 import PredictionResult from '../components/PredictionResult'
 import PredictionHistory from '../components/PredictionHistory'
-import DbViewer from '../components/DbViewer'
 
 export default function Home({
   onPredict,
@@ -36,9 +35,6 @@ export default function Home({
         onClear={onClearHistory}
         t={t}
       />
-
-      {/* Live Neon PostgreSQL Database Inspector */}
-      <DbViewer t={t} metadata={metadata} />
     </div>
   )
 }

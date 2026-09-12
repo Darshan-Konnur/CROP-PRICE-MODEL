@@ -170,7 +170,7 @@ Trend: ${isUp ? '📈 ' + (t.trendRising || 'Rising') : isDown ? '📉 ' + (t.tr
 
               {latest_recorded_price && (
                 <div className="text-xs text-slate-500">
-                  {t.latestPrice || 'Last recorded price in DB'}: <strong>₹{latest_recorded_price.toLocaleString('en-IN')}</strong> / Q
+                  {t.latestPrice || 'Last recorded mandi price'}: <strong>₹{latest_recorded_price.toLocaleString('en-IN')}</strong> / Q
                 </div>
               )}
             </div>

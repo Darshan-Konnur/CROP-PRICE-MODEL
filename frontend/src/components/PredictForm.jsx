@@ -193,12 +193,12 @@ export default function PredictForm({
             <span>{t.predictHeading || 'APMC Crop Price Prediction'}</span>
           </h2>
           <p className="text-xs text-slate-500 mt-1">
-            {t.predictDesc || 'Verified AI predictions strictly using real historical APMC mandi data from Neon PostgreSQL.'}
+            {t.predictDesc || 'Verified AI price forecasts powered by real APMC mandi arrival records and historical modal rates.'}
           </p>
         </div>
         <div className="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl font-semibold w-fit">
-          <Database className="w-3.5 h-3.5" />
-          <span>Neon DB Active: 5,923 Records</span>
+          <Check className="w-3.5 h-3.5 text-emerald-600" />
+          <span>Verified Market Intelligence</span>
         </div>
       </div>
 
@@ -212,7 +212,7 @@ export default function PredictForm({
                 <span>{t.commodityLabel || 'Commodity / Crop'}</span>
               </label>
               <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-bold border border-emerald-200">
-                {dbMarketsForCrop.length} Mandis in DB
+                {dbMarketsForCrop.length} Mandis Available
               </span>
             </div>
 
@@ -258,7 +258,7 @@ export default function PredictForm({
             {showCropSuggestions && (
               <div className="absolute z-40 left-0 right-0 mt-1.5 max-h-64 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl divide-y divide-slate-100 text-xs">
                 <div className="px-3 py-2 bg-slate-50 text-[11px] font-semibold text-slate-500 flex items-center justify-between">
-                  <span>Available Crops in DB:</span>
+                  <span>Available Crops:</span>
                   <span className="text-[10px] text-emerald-700 bg-emerald-100/70 px-1.5 py-0.5 rounded font-bold">
                     {dbCommodities.length} Total
                   </span>
@@ -321,11 +321,11 @@ export default function PredictForm({
               </label>
               {hasVerifiedData ? (
                 <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">
-                  ✓ {dataRecordCount} Records in DB
+                  ✓ {dataRecordCount} Verified Records
                 </span>
               ) : (
                 <span className="text-[10px] text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full font-bold">
-                  ⚠️ No DB Records
+                  ⚠️ No Market Records
                 </span>
               )}
             </div>
@@ -376,7 +376,7 @@ export default function PredictForm({
             {showMarketSuggestions && (
               <div className="absolute z-40 left-0 right-0 mt-1.5 max-h-64 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl divide-y divide-slate-100 text-xs">
                 <div className="px-3 py-2 bg-slate-50 text-[11px] font-semibold text-slate-500 flex items-center justify-between">
-                  <span>All Mandis in DB for {commodity}:</span>
+                  <span>Available Mandis for {commodity}:</span>
                   <span className="text-[10px] text-emerald-700 bg-emerald-100/70 px-1.5 py-0.5 rounded font-bold">
                     {candidateMarkets.length} Available
                   </span>
@@ -416,7 +416,7 @@ export default function PredictForm({
                           </span>
                         ) : (
                           <span className="text-[10px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
-                            In DB
+                            Verified
                           </span>
                         )}
                       </div>
@@ -574,21 +574,21 @@ export default function PredictForm({
                 <Check className="w-3.5 h-3.5" />
               </div>
               <div>
-                <span className="font-bold">Database Check Passed:</span> Found <strong>{dataRecordCount} historical records</strong> for <strong>{t.crops?.[commodity] || commodity}</strong> in <strong>{market} APMC</strong> in Neon PostgreSQL. Ready for ML prediction.
+                <span className="font-bold">Market Data Verified:</span> Found <strong>{dataRecordCount} historical records</strong> for <strong>{t.crops?.[commodity] || commodity}</strong> in <strong>{market} APMC</strong>. Ready for AI price prediction.
               </div>
             </div>
             <span className="text-[11px] bg-emerald-200/80 text-emerald-950 font-bold px-2 py-0.5 rounded flex-shrink-0">
-              Verified in DB
+              Verified Data
             </span>
           </div>
         ) : (
           <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-950 text-xs space-y-2 animate-fade-in">
             <div className="flex items-center gap-2 font-bold text-rose-900">
               <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0" />
-              <span>Data Check Failed: No records found for {t.crops?.[commodity] || commodity} in "{market}" APMC in Database</span>
+              <span>No Market Records Found: No historical price records found for {t.crops?.[commodity] || commodity} in "{market}" APMC.</span>
             </div>
             <p className="text-rose-800 leading-relaxed">
-              The AI model only predicts when real historical records exist in the database. Please select an available APMC market with DB records below:
+              The AI model generates forecasts based on verified historical APMC mandi records. Please select an available market below:
             </p>
             <div className="flex flex-wrap gap-1.5 pt-1">
               {candidateMarkets.map((m) => {
@@ -644,7 +644,7 @@ export default function PredictForm({
           {!hasVerifiedData && (
             <span className="text-xs text-rose-600 font-semibold flex items-center gap-1">
               <AlertTriangle className="w-3.5 h-3.5" />
-              <span>Select an APMC mandi with DB records above to predict</span>
+              <span>Select an available APMC mandi above to predict</span>
             </span>
           )}
         </div>
