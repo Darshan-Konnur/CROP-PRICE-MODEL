@@ -4,8 +4,61 @@ import Home from './pages/Home'
 import Footer from './components/Footer'
 import { TRANSLATIONS } from './utils/translations'
 
+const DEFAULT_METADATA = {
+  status: 'ok',
+  commodities: [
+    'Tomato', 'Onion', 'Potato', 'Wheat', 'Maize', 'Rice',
+    'Green Chilli', 'Garlic', 'Ginger', 'Soybean', 'Cotton'
+  ],
+  markets: [
+    'Agra', 'Belagavi', 'Bengaluru', 'Bhopal', 'Davangere', 'Guntur',
+    'Hassan', 'Haveri', 'Hubballi', 'Indore', 'Jaipur', 'Kolar', 'Kota',
+    'Lasalgaon', 'Madanapalle', 'Mandsaur', 'Nagpur', 'Nashik', 'Pune',
+    'Raichur', 'Shimoga', 'Solapur'
+  ],
+  pairs: [
+    { commodity: 'Onion', market: 'Pune', count: 193 },
+    { commodity: 'Onion', market: 'Lasalgaon', count: 193 },
+    { commodity: 'Onion', market: 'Solapur', count: 193 },
+    { commodity: 'Onion', market: 'Nashik', count: 167 },
+    { commodity: 'Onion', market: 'Hubballi', count: 141 },
+    { commodity: 'Onion', market: 'Indore', count: 141 },
+    { commodity: 'Tomato', market: 'Pune', count: 193 },
+    { commodity: 'Tomato', market: 'Kolar', count: 193 },
+    { commodity: 'Tomato', market: 'Nashik', count: 193 },
+    { commodity: 'Tomato', market: 'Davangere', count: 167 },
+    { commodity: 'Tomato', market: 'Bengaluru', count: 141 },
+    { commodity: 'Tomato', market: 'Madanapalle', count: 141 },
+    { commodity: 'Potato', market: 'Pune', count: 167 },
+    { commodity: 'Potato', market: 'Agra', count: 193 },
+    { commodity: 'Potato', market: 'Bengaluru', count: 193 },
+    { commodity: 'Potato', market: 'Indore', count: 193 },
+    { commodity: 'Potato', market: 'Hassan', count: 141 },
+    { commodity: 'Wheat', market: 'Bhopal', count: 193 },
+    { commodity: 'Wheat', market: 'Indore', count: 193 },
+    { commodity: 'Wheat', market: 'Nashik', count: 167 },
+    { commodity: 'Wheat', market: 'Jaipur', count: 141 },
+    { commodity: 'Wheat', market: 'Kota', count: 141 },
+    { commodity: 'Maize', market: 'Belagavi', count: 193 },
+    { commodity: 'Maize', market: 'Haveri', count: 193 },
+    { commodity: 'Maize', market: 'Davangere', count: 167 },
+    { commodity: 'Rice', market: 'Bengaluru', count: 167 },
+    { commodity: 'Rice', market: 'Raichur', count: 141 },
+    { commodity: 'Rice', market: 'Shimoga', count: 141 },
+    { commodity: 'Green Chilli', market: 'Davangere', count: 193 },
+    { commodity: 'Green Chilli', market: 'Guntur', count: 193 },
+    { commodity: 'Green Chilli', market: 'Nagpur', count: 141 },
+    { commodity: 'Garlic', market: 'Mandsaur', count: 141 },
+    { commodity: 'Garlic', market: 'Nashik', count: 141 },
+    { commodity: 'Ginger', market: 'Pune', count: 141 },
+    { commodity: 'Ginger', market: 'Shimoga', count: 141 },
+    { commodity: 'Cotton', market: 'Nagpur', count: 26 },
+    { commodity: 'Soybean', market: 'Indore', count: 26 }
+  ]
+}
+
 export default function App() {
-  const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
+  const API_BASE = import.meta.env.VITE_API_BASE || 'https://crop-price-api-3m77.onrender.com'
 
   // Language state: defaults to saved language or 'en'
   const [lang, setLang] = useState(() => {
@@ -19,7 +72,8 @@ export default function App() {
     localStorage.setItem('CROP_LANG', newLang)
   }
 
-  const [metadata, setMetadata] = useState(null)
+  // Initialize with DEFAULT_METADATA so UI never renders 0 mandis
+  const [metadata, setMetadata] = useState(DEFAULT_METADATA)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
@@ -43,17 +97,19 @@ export default function App() {
     }
   }, [history])
 
-  // Fetch available commodities & APMC markets from Neon DB on mount
+  // Fetch available commodities & APMC markets from Neon DB on mount if /meta is available
   useEffect(() => {
     const fetchMetadata = async () => {
       try {
         const res = await fetch(`${API_BASE}/meta`)
         if (res.ok) {
           const data = await res.json()
-          setMetadata(data)
+          if (data && data.pairs && data.pairs.length > 0) {
+            setMetadata(data)
+          }
         }
       } catch (err) {
-        console.warn('Could not fetch DB metadata, using built-in defaults:', err)
+        console.warn('Backend does not expose /meta or connection failed, using full built-in DB metadata:', err)
       }
     }
 
@@ -83,18 +139,30 @@ export default function App() {
       }
 
       const data = await res.json()
-      setResult(data)
+      // Normalize response so it works with both complete backend and minimal backend
+      const normalizedData = {
+        commodity: payload.commodity,
+        market: payload.market,
+        prediction_date: payload.prediction_date,
+        predicted_modal_price: data.predicted_modal_price,
+        latest_recorded_price: data.latest_recorded_price || data.predicted_modal_price,
+        percentage_change: data.percentage_change ?? 0.0,
+        price_difference: data.price_difference ?? 0.0,
+        history: data.history || []
+      }
+
+      setResult(normalizedData)
       setHistory((prev) => [
-        data,
+        normalizedData,
         ...prev.filter(
-          (h) => !(h.commodity.toLowerCase() === data.commodity.toLowerCase() &&
-                   h.market.toLowerCase() === data.market.toLowerCase() &&
-                   h.prediction_date === data.prediction_date)
+          (h) => !(h.commodity.toLowerCase() === normalizedData.commodity.toLowerCase() &&
+                   h.market.toLowerCase() === normalizedData.market.toLowerCase() &&
+                   h.prediction_date === normalizedData.prediction_date)
         )
       ].slice(0, 10))
     } catch (err) {
       if (err.name === 'TypeError' && err.message.toLowerCase().includes('failed to fetch')) {
-        setError(`Unable to connect to the backend server at ${API_BASE}. Please verify that the API server is active on port 8000.`)
+        setError(`Unable to connect to backend at ${API_BASE}. Free Render instances may take ~30 seconds to wake up from idle.`)
       } else {
         setError(err.message)
       }
